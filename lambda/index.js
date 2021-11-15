@@ -3,7 +3,6 @@ const https = require('https');
 const url = require('url');
 
 const textUrl = '';	// ここにURLを入力
-const tutorialText = 'ウェブフォーム上で文章を書き換えた後に「こんにちは」と言って下さい。';
 
 const httpget = function(u, postdata, headers) {
     return (new Promise(function(resolve, reject) {
@@ -52,23 +51,13 @@ const LaunchRequestHandler = {
         return handlerInput.requestEnvelope.request.type === 'LaunchRequest';
     },
     handle(handlerInput) {
-        return handlerInput.responseBuilder
-            .speak(tutorialText)
-            .reprompt(tutorialText)
-            .getResponse();
-    }
-};
-
-const HelloWorldIntentHandler = {
-    canHandle(handlerInput) {
-        return handlerInput.requestEnvelope.request.type === 'IntentRequest'
-            && handlerInput.requestEnvelope.request.intent.name === 'HelloWorldIntent';
-    },
-    handle(handlerInput) {
         return (httpget(textUrl).then(function(html) {
+            let output = "";
+            output = html.replace(/(&lt;)/g, "<");
+            output = output.replace(/(&gt;)/g, ">");
+            output = output.replace(/(&#39;)/g, "'");
             return handlerInput.responseBuilder
-                .speak(html)
-                .reprompt(tutorialText)
+                .speak(output)
                 .getResponse();
         }));
     }
@@ -142,7 +131,6 @@ const ErrorHandler = {
 exports.handler = Alexa.SkillBuilders.custom()
     .addRequestHandlers(
         LaunchRequestHandler,
-        HelloWorldIntentHandler,
         HelpIntentHandler,
         CancelAndStopIntentHandler,
         SessionEndedRequestHandler,
